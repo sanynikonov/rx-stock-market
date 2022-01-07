@@ -1,6 +1,6 @@
-﻿namespace Business;
+﻿namespace Infrastructure.Finance;
 
-public class TradeModel
+public class FinanceChartModel
 {
     public Chart Chart { get; set; }
 }
