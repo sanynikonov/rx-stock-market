@@ -3,12 +3,12 @@ using System.Text.Json;
 
 namespace Infrastructure.Finance;
 
-public class FinanceApiClient : ITradeClient
+public class FinanceApiApiClient : IFinanceApiClient
 {
     private static readonly JsonSerializerOptions Options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
     private readonly HttpClient _httpClient;
 
-    public FinanceApiClient(HttpClient httpClient)
+    public FinanceApiApiClient(HttpClient httpClient)
     {
         _httpClient = httpClient;
     }

@@ -1,6 +1,6 @@
 ﻿namespace Infrastructure.Finance;
 
-public interface ITradeClient
+public interface IFinanceApiClient
 {
     IObservable<FinanceChartModel> GetTrades();
 }
