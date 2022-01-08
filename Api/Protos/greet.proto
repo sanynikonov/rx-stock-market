@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+option csharp_namespace = "Api";
+
+package greet;
+
+// The greeting service definition.
+service Greeter {
+  // Streams greetings
+  rpc SayHello (HelloRequest) returns (stream HelloReply);
+}
+
+message HelloRequest {
+}
+
+// The response message containing the greetings.
+message HelloReply {
+  string message = 1;
+}
