@@ -1,4 +1,4 @@
-﻿namespace Business;
+﻿namespace Business.StockPrice;
 
 public class StockTimeSeries
 {

@@ -1,10 +1,9 @@
 ﻿using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using Infrastructure;
 using Infrastructure.Finance;
 using Infrastructure.Storage;
 
-namespace Business;
+namespace Business.StockPrice;
 
 public class StockService : IStockService
 {
