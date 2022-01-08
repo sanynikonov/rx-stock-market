@@ -2,5 +2,5 @@
 
 public interface IFinanceApiClient
 {
-    IObservable<FinanceChartModel> GetTrades();
+    IObservable<FinanceChartModel> GetTrades(string company);
 }

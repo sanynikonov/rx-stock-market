@@ -23,7 +23,7 @@ public class StockService : IStockService
             return stream;
         }
 
-        stream = _financeApiClient.GetTrades()
+        stream = _financeApiClient.GetTrades(company)
             .SelectMany(data => Observable.Create<StockTimeSeries>(observer =>
             {
                 var result = data.Chart.Result.First();

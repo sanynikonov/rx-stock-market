@@ -13,13 +13,13 @@ public class FinanceApiApiClient : IFinanceApiClient
         _httpClient = httpClient;
     }
 
-    public IObservable<FinanceChartModel> GetTrades()
+    public IObservable<FinanceChartModel> GetTrades(string company)
     {
-        return Observable.Interval(TimeSpan.FromSeconds(10))
+        return Observable.Interval(TimeSpan.FromSeconds(1))
             .SelectMany(async _ =>
             {
                 var bytes = await _httpClient.GetByteArrayAsync(
-                    "https://query1.finance.yahoo.com/v8/finance/chart/AAPL?range=5m&interval=1m");
+                    $"https://query1.finance.yahoo.com/v8/finance/chart/{company}?range=1m&interval=1m");
                 return JsonSerializer.Deserialize<FinanceChartModel>(bytes, Options);
             })!;
     }
