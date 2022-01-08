@@ -24,6 +24,17 @@ public class AppDbContext : IdentityDbContext<UserModel, IdentityRole<int>, int>
                 v => string.Join(';', v),
                 v => v.Split(';', StringSplitOptions.RemoveEmptyEntries));
         
+        var user = new UserModel
+        {
+            Id = 1,
+            UserName = "nickname"
+        };
+
+        var ph = new PasswordHasher<UserModel>();
+        user.PasswordHash = ph.HashPassword(user, "!Password1");
+
+        builder.Entity<UserModel>().HasData(user);
+
         base.OnModelCreating(builder);
     }
 }
