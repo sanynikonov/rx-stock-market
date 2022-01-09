@@ -3,7 +3,7 @@ using System.Reactive.Linq;
 using Infrastructure.Finance;
 using Infrastructure.Storage;
 
-namespace Business.StockPrice;
+namespace Business.Stock;
 
 public class StockService : IStockService
 {
@@ -47,9 +47,11 @@ public class StockService : IStockService
                 observer.OnCompleted();
 
                 return Disposable.Empty;
-            }));
+            }))
+            .Publish()
+            .RefCount();
 
-        _streams.Add(company, stream);
+        _streams.Add(company, stream); //TODO: remove stream when all unsubscribed
         return stream;
     }
 }

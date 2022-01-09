@@ -1,0 +1,39 @@
+﻿syntax = "proto3";
+
+option csharp_namespace = "Api";
+
+package stock;
+
+import "google/protobuf/wrappers.proto";
+
+service StockMarketService {
+	rpc GetStockPriceStream (PriceRequest) returns (stream PriceStreamResponse);
+	//rpc GetStockTrendStream (TrendRequest) returns (stream TrendStreamResponse);
+}
+
+message PriceRequest {
+	int32 time_interval = 1;
+	string company = 2;
+}
+
+message PriceStreamResponse {
+	oneof response {
+		StockTimeSeries data = 1;
+		Error error = 2;
+	}
+}
+
+message StockTimeSeries {
+	int64 timestamp = 1;
+	google.protobuf.DoubleValue high = 2;
+	google.protobuf.DoubleValue low = 3;
+	google.protobuf.DoubleValue close = 4;
+	google.protobuf.DoubleValue open = 5;
+	google.protobuf.DoubleValue volume = 6;
+	string currency = 7;
+
+}
+
+message Error {
+	string message = 1;
+}

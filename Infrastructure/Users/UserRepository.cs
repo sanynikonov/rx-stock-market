@@ -18,6 +18,7 @@ public class UserRepository : IUserRepository
 
     public IObservable<UserModel> GetUserPreferences(int userId)
     {
+        //TODO: use PublishLast
         return Observable.DeferAsync(async token =>
         {
             if (_subjects.TryGetValue(userId, out var subject))

@@ -7,16 +7,22 @@ using Grpc.Net.Client;
 using Infrastructure;
 using Microsoft.EntityFrameworkCore;
 
-await RxGrpcTest();
+await StockServiceTest();
+
+async Task StockServiceTest()
+{
+    var client = new StockMarketService.StockMarketServiceClient(GetGrpcChannel());
+
+    var call = client.GetStockPriceStream(new PriceRequest { TimeInterval = 1, Company = "AAPL" });
+    await foreach (var data in call.ResponseStream.ReadAllAsync())
+    {
+        Console.WriteLine(data.Data.Timestamp + ": " + data.Data.Open);
+    }
+}
 
 async Task RxGrpcTest()
 {
-    var channel = GrpcChannel.ForAddress("https://localhost:7116", new GrpcChannelOptions
-    {
-        HttpHandler = GetHttpClientHandler()
-    });
-
-    var client = new Greeter.GreeterClient(channel);
+    var client = new Greeter.GreeterClient(GetGrpcChannel());
 
     var call = client.SayHello(new HelloRequest());
     await foreach (var data in call.ResponseStream.ReadAllAsync())
@@ -24,6 +30,11 @@ async Task RxGrpcTest()
         Console.WriteLine(data.Message);
     }
 }
+
+GrpcChannel GetGrpcChannel() => GrpcChannel.ForAddress("https://localhost:7116", new GrpcChannelOptions
+{
+    HttpHandler = GetHttpClientHandler()
+});
 
 HttpClientHandler GetHttpClientHandler()
 {

@@ -15,7 +15,7 @@ public class FinanceApiApiClient : IFinanceApiClient
 
     public IObservable<FinanceChartModel> GetTrades(string company)
     {
-        return Observable.Interval(TimeSpan.FromSeconds(1))
+        return Observable.Interval(TimeSpan.FromMinutes(1))
             .SelectMany(async _ =>
             {
                 var bytes = await _httpClient.GetByteArrayAsync(
