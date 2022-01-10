@@ -8,9 +8,9 @@ namespace Business.Stock;
 public class StockService : IStockService
 {
     private readonly IFinanceApiClient _financeApiClient;
-    private readonly IStorage<string, IObservable<StockTimeSeries>> _streams;
+    private readonly IStorage<string, (IObservable<StockTimeSeries> Stream, int SubscribersCount)> _streams;
 
-    public StockService(IFinanceApiClient financeApiClient, IStorage<string, IObservable<StockTimeSeries>> streamsStorage)
+    public StockService(IFinanceApiClient financeApiClient, IStorage<string, (IObservable<StockTimeSeries> Stream, int SubscribersCount)> streamsStorage)
     {
         _financeApiClient = financeApiClient;
         _streams = streamsStorage;
@@ -18,14 +18,22 @@ public class StockService : IStockService
 
     public IObservable<StockTimeSeries> GetCompanyPriceChangeByUserPreferences(string company)
     {
-        if (_streams.TryGetValue(company, out var stream))
+        if (_streams.TryGetValue(company, out var pair))
         {
-            return stream;
+            pair.SubscribersCount++;
+            return pair.Stream;
         }
 
-        stream = _financeApiClient.GetTrades(company)
+        var stream = _financeApiClient.GetTrades(company)
             .SelectMany(data => Observable.Create<StockTimeSeries>(observer =>
             {
+                if (data.Chart.Error != null)
+                {
+                    observer.OnError(new Exception(data.Chart.Error.Description));
+                    observer.OnCompleted();
+                    return Disposable.Empty;
+                }
+
                 var result = data.Chart.Result.First();
                 var quote = result.Indicators.Quote.First();
 
@@ -45,13 +53,27 @@ public class StockService : IStockService
                 }
 
                 observer.OnCompleted();
-
                 return Disposable.Empty;
             }))
             .Publish()
             .RefCount();
 
-        _streams.Add(company, stream); //TODO: remove stream when all unsubscribed
+        _streams.Add(company, (stream, 1));
         return stream;
+    }
+
+    public void Unsubscribe(string company)
+    {
+        if (!_streams.TryGetValue(company, out var pair))
+        {
+            return;
+        }
+
+        pair.SubscribersCount--;
+
+        if (pair.SubscribersCount <= 0)
+        {
+            _streams.Remove(company);
+        }
     }
 }

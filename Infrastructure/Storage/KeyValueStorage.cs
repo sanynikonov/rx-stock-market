@@ -15,4 +15,9 @@ public class KeyValueStorage<TKey, TValue> : IStorage<TKey, TValue>
     {
         _items[key] = value;
     }
+
+    public bool Remove(TKey key)
+    {
+        return _items.TryRemove(key, out _);
+    }
 }

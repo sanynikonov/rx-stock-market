@@ -8,7 +8,13 @@ public class FinanceChartModel
 public class Chart
 {
     public Result[] Result { get; set; }
-    public string Error { get; set; }
+    public Error Error { get; set; }
+}
+
+public class Error
+{
+    public string Code { get; set; }
+    public string Description { get; set; }
 }
 
 public class Result

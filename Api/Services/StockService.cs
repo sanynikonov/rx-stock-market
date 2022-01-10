@@ -1,6 +1,7 @@
 ﻿using System.Reactive.Linq;
 using Api.Extensions;
 using AutoMapper;
+using Business.Stock;
 using Business.Stock.Price;
 using Grpc.Core;
 
@@ -11,12 +12,14 @@ public class StockService : StockMarketService.StockMarketServiceBase
     private readonly ILogger<StockService> _logger;
     private readonly IMapper _mapper;
     private readonly IStockPriceSubscriptionService _service;
+    private readonly IStockService _stockService;
 
-    public StockService(IStockPriceSubscriptionService service, IMapper mapper, ILogger<StockService> logger)
+    public StockService(IStockPriceSubscriptionService service, IStockService stockService, IMapper mapper, ILogger<StockService> logger)
     {
         _service = service;
         _mapper = mapper;
         _logger = logger;
+        _stockService = stockService;
     }
 
     public override async Task GetStockPriceStream(PriceRequest request, IServerStreamWriter<PriceStreamResponse> responseStream, ServerCallContext context)
@@ -42,6 +45,8 @@ public class StockService : StockMarketService.StockMarketServiceBase
                 });
 
         await tcs.Task;
+
+        _stockService.Unsubscribe(request.Company);
 
         _logger.LogInformation("Closed stream");
     }
