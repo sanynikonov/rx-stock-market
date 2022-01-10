@@ -1,5 +1,6 @@
 ﻿using System.Reactive.Linq;
 using Infrastructure.Users;
+using Microsoft.Extensions.Options;
 using Tweetinvi;
 using Tweetinvi.Core.Extensions;
 using Tweetinvi.Models;
@@ -9,19 +10,16 @@ namespace Infrastructure.Twitter;
 
 public class TwitterApiClient : ITwitterApiClient
 {
-    private const string Key = "bUZJDz82U2xTSqMKgdKK1AInk";
-    private const string Secret = "X17XzTRsDMA3dQUMPM813SZTwUhwJhcAvXReyoR9Rz2ImS3J95";
-
-    private const string Token =
-        "AAAAAAAAAAAAAAAAAAAAAM2XXwEAAAAAtdcdm42KluIcJkHCXIIPhJoq4RU%3DgLXipp5h9hSu3mftr7v12id7rqkIW0mjb5tIZm4GP653pfxvJk";
-
+    private readonly TwitterApiClientSettings _settings;
     private readonly TwitterClient _twitterClient;
 
-    public TwitterApiClient()
+    public TwitterApiClient(IOptions<TwitterApiClientSettings> settings)
     {
-        var credentials = new ConsumerOnlyCredentials(Key, Secret)
+        _settings = settings.Value;
+        
+        var credentials = new ConsumerOnlyCredentials(_settings.Key, _settings.Secret)
         {
-            BearerToken = Token
+            BearerToken = _settings.Token
         };
         
         _twitterClient = new TwitterClient(credentials);
