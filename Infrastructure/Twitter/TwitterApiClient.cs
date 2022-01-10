@@ -25,66 +25,6 @@ public class TwitterApiClient : ITwitterApiClient
         _twitterClient = new TwitterClient(credentials);
     }
 
-    /*public IObservable<TweetV2> GetTweets(string tag)
-    {
-        return Observable.Create<TweetV2>(async observer =>
-        {
-            var search = await _twitterClient.SearchV2.SearchTweetsAsync(tag);
-            var tweets = search.Tweets;
-
-            foreach (var tweet in tweets) 
-                observer.OnNext(tweet);
-
-            observer.OnCompleted();
-            
-            return Disposable.Empty;
-        });
-    }*/
-    
-    /*public IObservable<TweetV2> GetTweets(string tag)
-    {
-        return Observable
-            .Interval(TimeSpan.FromSeconds(1))
-            .SelectMany(async _ =>
-            {
-                var search = await _twitterClient.SearchV2.SearchTweetsAsync(tag);
-                return search.Tweets;
-            });
-    }*/
-    
-    /*public IObservable<TweetV2> GetTweets(string tag)
-    {
-        return Observable
-            .Interval(TimeSpan.FromSeconds(10))
-            .Select(async _ => Observable.Create<TweetV2>(async observer =>
-            {
-                var search = await _twitterClient.SearchV2.SearchTweetsAsync(tag);
-                var tweets = search.Tweets;
-
-                foreach (var tweet in tweets) 
-                    observer.OnNext(tweet);
-
-                observer.OnCompleted();
-            
-                return Disposable.Empty;
-            }));
-    }*/
-    
-    /*public IObservable<TweetV2> GetTweets(string tag)
-    {
-        return Observable.Interval(TimeSpan.FromSeconds(10))
-            .SelectMany()
-    }*/
-    
-    /*public async Task GetTweets(string tag)
-    {
-        var stream = _twitterClient.Streams.CreateFilteredStream();
-        stream.StallWarnings = null;
-        stream.AddTrack(" ");
-        stream.EventReceived += (sender, args) => { Console.WriteLine(args.Json); };
-        await stream.StartMatchingAllConditionsAsync();
-    }*/
-    
     public IObservable<TweetV2> GetTweets(CompanyModel companyModel)
     {
         string request = BuildTweetsRequest(companyModel);
