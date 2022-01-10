@@ -1,14 +1,9 @@
-﻿using System.Net;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
-using Microsoft.Extensions.Logging;
+﻿using System.Reactive.Linq;
+using Infrastructure.Users;
 using Tweetinvi;
-using Tweetinvi.Core.Models;
+using Tweetinvi.Core.Extensions;
 using Tweetinvi.Models;
 using Tweetinvi.Models.V2;
-using Tweetinvi.Parameters.V2;
-using Tweetinvi.Streaming.V2;
-using Tweetinvi.Streams.Model;
 
 namespace Infrastructure.Twitter;
 
@@ -59,20 +54,63 @@ public class TwitterApiClient : ITwitterApiClient
             });
     }*/
     
-    public async Task GetTweets(string tag)
+    /*public IObservable<TweetV2> GetTweets(string tag)
+    {
+        return Observable
+            .Interval(TimeSpan.FromSeconds(10))
+            .Select(async _ => Observable.Create<TweetV2>(async observer =>
+            {
+                var search = await _twitterClient.SearchV2.SearchTweetsAsync(tag);
+                var tweets = search.Tweets;
+
+                foreach (var tweet in tweets) 
+                    observer.OnNext(tweet);
+
+                observer.OnCompleted();
+            
+                return Disposable.Empty;
+            }));
+    }*/
+    
+    /*public IObservable<TweetV2> GetTweets(string tag)
+    {
+        return Observable.Interval(TimeSpan.FromSeconds(10))
+            .SelectMany()
+    }*/
+    
+    /*public async Task GetTweets(string tag)
     {
         var stream = _twitterClient.Streams.CreateFilteredStream();
         stream.StallWarnings = null;
         stream.AddTrack(" ");
         stream.EventReceived += (sender, args) => { Console.WriteLine(args.Json); };
         await stream.StartMatchingAllConditionsAsync();
-    }
+    }*/
     
-    
-
-    public async Task<TweetV2[]> GetTweets2(string tag)
+    public IObservable<TweetV2> GetTweets(CompanyModel companyModel)
     {
-        var search = await _twitterClient.SearchV2.SearchTweetsAsync(tag);
-        return search.Tweets;
+        string request = BuildTweetsRequest(companyModel);
+        
+        return Observable.FromAsync(async () =>
+        {
+            var search = await _twitterClient.SearchV2.SearchTweetsAsync(request);
+            return search.Tweets;
+        }).SelectMany(x => x);
+    }
+
+    private string BuildTweetsRequest(CompanyModel companyModel)
+    {
+        var initRequest = string.Empty;
+
+        if (!companyModel.Name.IsNullOrEmpty())
+            initRequest += $"#{companyModel.Name} ";
+
+        if (!companyModel.Tags.IsNullOrEmpty())
+        {
+            foreach (var tag in companyModel.Tags) 
+                initRequest += $"#{tag} ";
+        }
+        
+        return initRequest.Trim();
     }
 }
