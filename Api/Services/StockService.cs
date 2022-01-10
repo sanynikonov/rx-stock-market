@@ -27,11 +27,7 @@ public class StockService : StockMarketService.StockMarketServiceBase
         context.CancellationToken.Register(() => tcs.SetResult());
 
         using var _ = _service
-            .GetStockTimeSeries(new StreamRequest
-            {
-                Company = request.Company,
-                TimeInterval = request.TimeInterval
-            })
+            .GetStockTimeSeries(_mapper.Map<StreamRequest>(request))
             .SubscribeAsync(
                 async data =>
                 {
