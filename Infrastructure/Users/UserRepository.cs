@@ -26,20 +26,19 @@ public class UserRepository : IUserRepository
                 return subject;
             }
 
-            var user = await _context.Users.FindAsync(userId, token);
+            var user = await _context.Users.FindAsync(userId);
             _subjects[userId] = new BehaviorSubject<UserModel>(user);
             return _subjects[userId].AsObservable();
         });
     }
 
-    public IObservable<Unit> UpdateUserPreferences(UserModel model)
+    public async Task UpdateUserPreferences(UserModel model)
     {
-        return Observable.FromAsync(async token =>
+        _context.Entry(model).State = EntityState.Modified;
+        await _context.SaveChangesAsync();
+        if (_subjects.TryGetValue(model.Id, out var subject))
         {
-            _context.Entry(model).State = EntityState.Modified;
-            await _context.SaveChangesAsync(token);
-            _subjects[model.Id].OnNext(model);
-            return Unit.Default;
-        });
+            subject.OnNext(model);
+        }
     }
 }

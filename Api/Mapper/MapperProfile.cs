@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Business.Stock.Price;
+using Business.Users;
 
 namespace Api.Mapper;
 
@@ -9,5 +10,7 @@ public class MapperProfile : Profile
     {
         CreateMap<Business.Stock.StockTimeSeries, StockTimeSeries>();
         CreateMap<PriceRequest, StreamRequest>();
+        CreateMap<UpdatePreferencesRequest, UserPreferences>();
+        CreateMap<CompanyInfo, Business.Users.CompanyInfo>();
     }
 }

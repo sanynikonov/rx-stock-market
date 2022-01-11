@@ -1,13 +1,50 @@
 ﻿using System.Reactive.Linq;
 using System.Text.Json;
 using Api;
+using Api.Services;
 using Business;
 using Grpc.Core;
 using Grpc.Net.Client;
 using Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using UserService = Api.UserService;
 
-await StockServiceTest();
+await UpdatePreferencesUserServiceTest();
+
+
+async Task UpdatePreferencesUserServiceTest()
+{
+    var client = new UserService.UserServiceClient(GetGrpcChannel());
+    var token = "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJ1c2VyMTIzIiwibmJmIjoxNjQxODU5MjI1LCJleHAiOjE2NDI0NjQwMjUsImlhdCI6MTY0MTg1OTIyNX0.-Jr7Sw8Aqb2ydbXvj4ZlDjZdY8kjyiW5h3wWRGSNByiZTTegfGTE1uubBKFpdlcfrUQR0QNTRef_UB3WhWu0-Q";
+
+    var response = await client.UpdatePreferencesAsync(new UpdatePreferencesRequest { Companies = { new CompanyInfo { Name = "AAPL", SearchTags = { "finance", "stock" }} }}, new Metadata { { "Authorization", $"Bearer {token}" } });
+
+    if (response.Error != null)
+    {
+        Console.WriteLine(response.Error.Message);
+    }
+}
+
+async Task LoginUserServiceTest()
+{
+    var client = new UserService.UserServiceClient(GetGrpcChannel());
+
+    var response = await client.LoginAsync(new LoginRequest { UserName = "user123", Password = "!Password1" });
+
+    Console.WriteLine(response.Error != null ? response.Error.Message : response.Token);
+}
+
+async Task RegisterUserServiceTest()
+{
+    var client = new UserService.UserServiceClient(GetGrpcChannel());
+
+    var response = await client.RegisterAsync(new RegisterRequest { UserName = "user123", Password = "!Password1" });
+
+    if (response.Error != null)
+    {
+        Console.WriteLine(response.Error.Message);
+    }
+}
 
 async Task StockServiceTest()
 {

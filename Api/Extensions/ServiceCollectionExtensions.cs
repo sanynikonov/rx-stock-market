@@ -1,12 +1,17 @@
-﻿using Api.Mapper;
+﻿using System.Text;
+using Api.Mapper;
 using Business.Stock;
 using Business.Stock.Price;
+using Business.Users;
+using Business.Users.Jwt;
 using Infrastructure;
 using Infrastructure.Finance;
 using Infrastructure.Storage;
 using Infrastructure.Users;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Api.Extensions;
 
@@ -25,9 +30,33 @@ public static class ServiceCollectionExtensions
         services
             .AddSingleton(typeof(IStorage<,>), typeof(KeyValueStorage<,>))
             .AddTransient<IUserRepository, UserRepository>()
+            .AddTransient<IUserService, Business.Users.UserService>()
             .AddTransient<IFinanceApiClient, FinanceApiApiClient>()
             .AddTransient<IStockService, StockService>()
             .AddTransient<IStockPriceSubscriptionService, StockPriceSubscriptionService>();
+
+        services.AddScoped<IJwtGenerator, JwtGenerator>();
+
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["TokenKey"]));
+        services.AddAuthentication(x =>
+            {
+                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(x =>
+            {
+                x.RequireHttpsMetadata = false;
+                x.SaveToken = true;
+                x.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = key,
+                    ValidateIssuer = false,
+                    ValidateAudience = false
+                };
+            });
+
+        services.AddAuthorization();
 
         return services;
     }
