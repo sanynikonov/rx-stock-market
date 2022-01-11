@@ -2,6 +2,7 @@
 using Api.Mapper;
 using Business.Stock;
 using Business.Stock.Price;
+using Business.Stock.Trend;
 using Business.Users;
 using Business.Users.Jwt;
 using Infrastructure;
@@ -33,7 +34,8 @@ public static class ServiceCollectionExtensions
             .AddTransient<IUserService, Business.Users.UserService>()
             .AddTransient<IFinanceApiClient, FinanceApiApiClient>()
             .AddTransient<IStockService, StockService>()
-            .AddTransient<IStockPriceSubscriptionService, StockPriceSubscriptionService>();
+            .AddTransient<IStockPriceSubscriptionService, StockPriceSubscriptionService>()
+            .AddTransient<IStockTrendSubscriptionService, StockTrendSubscriptionService>();
 
         services.AddScoped<IJwtGenerator, JwtGenerator>();
 

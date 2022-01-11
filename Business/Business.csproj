@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="News\" />
     <Folder Include="Users\Jwt\" />
     <Folder Include="Users\" />
     <Folder Include="Stock\Price\" />

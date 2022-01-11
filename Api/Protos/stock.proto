@@ -8,7 +8,7 @@ import "google/protobuf/wrappers.proto";
 
 service StockMarketService {
 	rpc GetStockPriceStream (PriceRequest) returns (stream PriceStreamResponse);
-	//rpc GetStockTrendStream (TrendRequest) returns (stream TrendStreamResponse);
+	rpc GetStockTrendStream (TrendRequest) returns (stream TrendStreamResponse);
 }
 
 message PriceRequest {
@@ -31,7 +31,29 @@ message StockTimeSeries {
 	google.protobuf.DoubleValue open = 5;
 	google.protobuf.DoubleValue volume = 6;
 	string currency = 7;
+}
 
+message TrendRequest {
+}
+
+message TrendStreamResponse {
+	oneof response {
+		TrendSeries data = 1;
+		Error error = 2;
+	}
+}
+
+message TrendSeries {
+	double price_change = 1;
+	string company = 2;
+	string currency = 3;
+	repeated NewsMessage news = 4;
+}
+
+message NewsMessage {
+	google.protobuf.Timestamp created_at = 1;
+	string title = 2;
+	string content = 3;
 }
 
 message Error {

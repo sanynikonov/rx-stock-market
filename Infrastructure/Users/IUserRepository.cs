@@ -4,6 +4,6 @@ namespace Infrastructure.Users;
 
 public interface IUserRepository
 {
-    IObservable<UserModel> GetUserPreferences(int userId);
+    IObservable<UserModel> GetUserPreferences(string username);
     Task UpdateUserPreferences(UserModel model);
 }
