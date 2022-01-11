@@ -5,5 +5,5 @@ namespace Infrastructure.Twitter;
 
 public interface ITwitterApiClient
 {
-    IObservable<TweetV2> GetTweets(CompanyModel companyModel);
+    IObservable<TweetV2> GetTweets(CompanyModel companyModel, DateTime? fromDate, DateTime? toDate);
 }
