@@ -22,9 +22,17 @@ public class StockTrendSubscriptionService : IStockTrendSubscriptionService
         (StockTimeSeries Previous, StockTimeSeries Current) stockTuple = (new StockTimeSeries(), new StockTimeSeries());
         (TrendInfoModel Previous, TrendInfoModel Current) trendTuple = (new TrendInfoModel(), new TrendInfoModel());
 
-        return _userRepository.GetUserPreferences(username).SelectMany(u => u.RequestedCompanies.Select(x => x.Name))
+        return _userRepository.GetUserPreferences(username)
+            .Do(u =>
+            {
+                if (u == null)
+                    throw new InvalidOperationException("User not found.");
+                if (!u.RequestedCompanies.Any())
+                    throw new InvalidOperationException("User preferences not found.");
+            })
+            .SelectMany(u => u.RequestedCompanies)
             .SelectMany(company =>
-                _stockService.GetCompanyPriceChangeByUserPreferences(company)
+                _stockService.GetCompanyPriceChangeByUserPreferences(company.Name)
                     .Scan(stockTuple, (pair, series) => (pair.Current, series))
                     .Select(pair => new TrendInfoModel
                     {
@@ -42,9 +50,9 @@ public class StockTrendSubscriptionService : IStockTrendSubscriptionService
                         Currency = pair.Current.Currency,
                         PriceChange = pair.Current.PriceChange,
                         Timestamp = pair.Current.Timestamp,
-                        News = _newsService.GetRecentNewsByUserPreferences(
+                        News = _newsService.GetRecentCompanyNews(
                             DateTimeOffset.FromUnixTimeSeconds(pair.Previous.Timestamp),
-                            DateTimeOffset.FromUnixTimeSeconds(pair.Current.Timestamp), username).ToEnumerable()
+                            DateTimeOffset.FromUnixTimeSeconds(pair.Current.Timestamp), company).ToEnumerable()
                     }));
     }
 }

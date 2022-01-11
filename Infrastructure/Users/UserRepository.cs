@@ -29,7 +29,10 @@ public class UserRepository : IUserRepository
                 return subject;
             }
 
-            var user = await _userManager.FindByNameAsync(username);
+            var user = await _userManager.Users
+                .Include(u => u.RequestedCompanies)
+                .SingleAsync(u => u.UserName == username, token);
+
             subject = new BehaviorSubject<UserModel>(user);
             _subjects.Add(username, new BehaviorSubject<UserModel>(user));
             return subject.AsObservable();
