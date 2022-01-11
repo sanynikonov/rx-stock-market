@@ -34,8 +34,8 @@ public static class ServiceCollectionExtensions
             .AddTransient<IUserRepository, UserRepository>()
             .AddTransient<IUserService, Business.Users.UserService>()
             .AddTransient<IFinanceApiClient, FinanceApiApiClient>()
+            .AddTransient<INewsService, NewsService>()
             .AddTransient<IStockService, StockService>()
-            .AddTransient<INewsService, NewsServiceStub>()
             .AddTransient<IStockPriceSubscriptionService, StockPriceSubscriptionService>()
             .AddTransient<IStockTrendSubscriptionService, StockTrendSubscriptionService>();
 
