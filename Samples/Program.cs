@@ -21,7 +21,8 @@ async Task GetTweetsTest()
 
     var twitterClient = new TwitterApiClient();
 
-    twitterClient.GetTweets(company).Subscribe(value =>
+    twitterClient.GetTweets(company, toDate: DateTime.UtcNow.AddMinutes(-10))
+        .Subscribe(value =>
     {
         Console.WriteLine("-----------------------------------------------");
         Console.WriteLine(value.CreatedAt);
