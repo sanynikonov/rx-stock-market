@@ -1,18 +1,16 @@
 ﻿using System.Reactive.Linq;
-using System.Text.Json;
 using Api;
-using Api.Services;
-using Business;
 using Grpc.Core;
 using Grpc.Net.Client;
-using Infrastructure;
 using Infrastructure.Twitter;
 using Infrastructure.Users;
-using Microsoft.EntityFrameworkCore;
-using UserService = Api.UserService;
 
-await GetTweetsTest();
-await UpdatePreferencesUserServiceTest();
+var token = "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJ1c2VyMTIzIiwibmJmIjoxNjQxODU5MjI1LCJleHAiOjE2NDI0NjQwMjUsImlhdCI6MTY0MTg1OTIyNX0.-Jr7Sw8Aqb2ydbXvj4ZlDjZdY8kjyiW5h3wWRGSNByiZTTegfGTE1uubBKFpdlcfrUQR0QNTRef_UB3WhWu0-Q";
+var metadata = new Metadata {{"Authorization", $"Bearer {token}"}};
+//await GetTweetsTest();
+//await UpdatePreferencesUserServiceTest();
+//await StockServiceTest();
+await TrendStockServiceTest();
 
 async Task GetTweetsTest()
 {
@@ -35,9 +33,8 @@ async Task GetTweetsTest()
 async Task UpdatePreferencesUserServiceTest()
 {
     var client = new UserService.UserServiceClient(GetGrpcChannel());
-    var token = "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJ1c2VyMTIzIiwibmJmIjoxNjQxODU5MjI1LCJleHAiOjE2NDI0NjQwMjUsImlhdCI6MTY0MTg1OTIyNX0.-Jr7Sw8Aqb2ydbXvj4ZlDjZdY8kjyiW5h3wWRGSNByiZTTegfGTE1uubBKFpdlcfrUQR0QNTRef_UB3WhWu0-Q";
 
-    var response = await client.UpdatePreferencesAsync(new UpdatePreferencesRequest { Companies = { new CompanyInfo { Name = "AAPL", SearchTags = { "finance", "stock" }} }}, new Metadata { { "Authorization", $"Bearer {token}" } });
+    var response = await client.UpdatePreferencesAsync(new UpdatePreferencesRequest() { Companies = { new CompanyInfo { Name = "AAPL", SearchTags = { "finance", "stock" }} }}, metadata);
 
     if (response.Error != null)
     {
@@ -70,10 +67,28 @@ async Task StockServiceTest()
 {
     var client = new StockMarketService.StockMarketServiceClient(GetGrpcChannel());
 
-    var call = client.GetStockPriceStream(new PriceRequest { TimeInterval = 1, Company = "AAPL" });
+    var call = client.GetStockPriceStream(new PriceRequest { TimeInterval = 1, Company = "AAPL" }, metadata);
     await foreach (var data in call.ResponseStream.ReadAllAsync())
     {
-        Console.WriteLine(data.Data.Timestamp + ": " + data.Data.Open);
+        Console.WriteLine(data.Data.Timestamp + ": Open - " + data.Data.Open + "; Close - " + data.Data.Close);
+    }
+}
+
+async Task TrendStockServiceTest()
+{
+    var client = new StockMarketService.StockMarketServiceClient(GetGrpcChannel());
+
+    var call = client.GetStockTrendStream(new TrendRequest(), metadata);
+    
+    await foreach (var data in call.ResponseStream.ReadAllAsync())
+    {
+        if (data.Error != null)
+        {
+            Console.WriteLine(data.Error.Message);
+            continue;
+        }
+
+        Console.WriteLine(data.Data.Company + ": " + data.Data.PriceChange + " " + data.Data.Currency);
     }
 }
 

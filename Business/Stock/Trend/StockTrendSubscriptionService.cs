@@ -33,17 +33,28 @@ public class StockTrendSubscriptionService : IStockTrendSubscriptionService
             .SelectMany(u => u.RequestedCompanies)
             .SelectMany(company =>
                 _stockService.GetCompanyPriceChangeByUserPreferences(company.Name)
-                    .Scan(stockTuple, (pair, series) => (pair.Current, series))
+                    .Where(s =>
+                        s.Close.HasValue && s.Open.HasValue)
+                    .Select(s => new TrendInfoModel
+                    {
+                        Company = s.Company,
+                        Currency = s.Currency,
+                        PriceChange = s.Close - s.Open ?? 0
+                    })
+                    /*.Scan(stockTuple, (pair, series) => (pair.Current, series))
                     .Select(pair => new TrendInfoModel
                     {
                         Company = pair.Current.Company,
                         Currency = pair.Current.Currency,
                         PriceChange = pair.Current.High - pair.Current.High ?? 0
-                    })
-                    .Scan(trendTuple, (pair, model) => (pair.Current, model))
-                    .Where(pair => pair.Current.PriceChange * pair.Previous.PriceChange > 0)
+                    })*/
+                    .Scan(trendTuple, (pair, model) => 
+                        (pair.Current, model))
+                    .Where(pair =>
+                        pair.Current.PriceChange * pair.Previous.PriceChange < 0)
                     .Select(pair => pair.Current)
-                    .Scan(trendTuple, (pair, model) => (pair.Current, model))
+                    .Scan(trendTuple, (pair, model) =>
+                        (pair.Current, model))
                     .Select(pair => new TrendInfoModel
                     {
                         Company = pair.Current.Company,

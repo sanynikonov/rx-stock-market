@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using Api.Mapper;
+using Business.News;
 using Business.Stock;
 using Business.Stock.Price;
 using Business.Stock.Trend;
@@ -33,7 +34,8 @@ public static class ServiceCollectionExtensions
             .AddTransient<IUserRepository, UserRepository>()
             .AddTransient<IUserService, Business.Users.UserService>()
             .AddTransient<IFinanceApiClient, FinanceApiApiClient>()
-            .AddTransient<IStockService, StockService>()
+            .AddTransient<IStockService, StockServiceRandomized>()
+            .AddTransient<INewsService, NewsServiceStub>()
             .AddTransient<IStockPriceSubscriptionService, StockPriceSubscriptionService>()
             .AddTransient<IStockTrendSubscriptionService, StockTrendSubscriptionService>();
 

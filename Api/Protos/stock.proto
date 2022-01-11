@@ -5,6 +5,7 @@ option csharp_namespace = "Api";
 package stock;
 
 import "google/protobuf/wrappers.proto";
+import "google/protobuf/timestamp.proto";
 
 service StockMarketService {
 	rpc GetStockPriceStream (PriceRequest) returns (stream PriceStreamResponse);
