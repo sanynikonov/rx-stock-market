@@ -1,9 +1,13 @@
 ﻿using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using Api;
 using Grpc.Core;
 using Grpc.Net.Client;
+using Infrastructure;
+using Infrastructure.Storage;
 using Infrastructure.Twitter;
 using Infrastructure.Users;
+using Microsoft.EntityFrameworkCore;
 
 var token = "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJ1c2VyMTIzIiwibmJmIjoxNjQxODU5MjI1LCJleHAiOjE2NDI0NjQwMjUsImlhdCI6MTY0MTg1OTIyNX0.-Jr7Sw8Aqb2ydbXvj4ZlDjZdY8kjyiW5h3wWRGSNByiZTTegfGTE1uubBKFpdlcfrUQR0QNTRef_UB3WhWu0-Q";
 var metadata = new Metadata {{"Authorization", $"Bearer {token}"}};
@@ -11,6 +15,7 @@ var metadata = new Metadata {{"Authorization", $"Bearer {token}"}};
 //await UpdatePreferencesUserServiceTest();
 //await StockServiceTest();
 await TrendStockServiceTest();
+//await RepositoryTest();
 
 async Task GetTweetsTest()
 {
@@ -68,9 +73,15 @@ async Task StockServiceTest()
     var client = new StockMarketService.StockMarketServiceClient(GetGrpcChannel());
 
     var call = client.GetStockPriceStream(new PriceRequest { TimeInterval = 1, Company = "AAPL" }, metadata);
+
     await foreach (var data in call.ResponseStream.ReadAllAsync())
     {
-        Console.WriteLine(data.Data.Timestamp + ": Open - " + data.Data.Open + "; Close - " + data.Data.Close);
+        if (data.Error != null)
+        {
+            Console.WriteLine(data.Error.Message);
+            continue;
+        }
+        Console.WriteLine(DateTime.Now.TimeOfDay + ": " + data.Data.Timestamp + ": Open - " + data.Data.Open + "; Close - " + data.Data.Close);
     }
 }
 
@@ -90,6 +101,20 @@ async Task TrendStockServiceTest()
 
         Console.WriteLine(data.Data.Company + ": " + data.Data.PriceChange + " " + data.Data.Currency);
     }
+}
+
+async Task RepositoryTest()
+{
+    var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
+    optionsBuilder.UseSqlServer("Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=StockMarket;Integrated Security=True;");
+    using var context = new AppDbContext(optionsBuilder.Options);
+    var repository = new UserRepository(context, new KeyValueStorage<string, BehaviorSubject<UserModel>>());
+
+    var obs = repository.GetUserPreferences("user123");
+    obs.Subscribe(u => Console.WriteLine(u.NormalizedUserName));
+    await Task.Delay(5000);
+    obs.Subscribe(u => Console.WriteLine(u.NormalizedUserName));
+    await Task.Delay(5000);
 }
 
 async Task RxGrpcTest()
