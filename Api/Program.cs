@@ -1,5 +1,6 @@
 using Api.Extensions;
 using Api.Services;
+using Infrastructure.Twitter;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +10,11 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddGrpc();
 builder.Services.AddStockMarketServices(builder.Configuration);
+
+builder.Services
+    .Configure<TwitterApiClientSettings>(options => builder.Configuration
+        .GetSection("TwitterApiClient")
+        .Bind(options));
 
 var app = builder.Build();
 

@@ -6,11 +6,31 @@ using Business;
 using Grpc.Core;
 using Grpc.Net.Client;
 using Infrastructure;
+using Infrastructure.Twitter;
+using Infrastructure.Users;
 using Microsoft.EntityFrameworkCore;
 using UserService = Api.UserService;
 
+await GetTweetsTest();
 await UpdatePreferencesUserServiceTest();
 
+async Task GetTweetsTest()
+{
+    var company = new CompanyModel
+    {
+        Name = "meme"
+    };
+
+    var twitterClient = new TwitterApiClient();
+
+    twitterClient.GetTweets(company).Subscribe(value =>
+    {
+        Console.WriteLine("-----------------------------------------------");
+        Console.WriteLine(value.CreatedAt);
+    });
+
+    await Task.Delay(10000);
+}
 
 async Task UpdatePreferencesUserServiceTest()
 {
