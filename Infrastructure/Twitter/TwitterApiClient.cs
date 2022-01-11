@@ -43,13 +43,14 @@ public class TwitterApiClient : ITwitterApiClient
         _twitterClient = new TwitterClient(credentials);
     }
 
-    public IObservable<TweetV2> GetTweets(CompanyModel companyModel)
+    public IObservable<TweetV2> GetTweets(CompanyModel companyModel, DateTime? fromDate = null, DateTime? toDate = null)
     {
         string request = BuildTweetsRequest(companyModel);
         
         var parameters = new SearchTweetsV2Parameters(request)
         {
-            StartTime = DateTime.UtcNow.AddMinutes(-5)
+            StartTime = fromDate ?? (toDate?.AddMinutes(-5) ?? DateTime.UtcNow.AddMinutes(-5)),
+            EndTime = toDate ?? DateTime.UtcNow
         };
         
         return Observable.FromAsync(async () =>
