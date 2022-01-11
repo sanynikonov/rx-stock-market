@@ -10,12 +10,12 @@ namespace Infrastructure.Users;
 
 public class UserRepository : IUserRepository
 {
-    private readonly UserManager<UserModel> _userManager;
+    private readonly AppDbContext _context;
     private readonly IStorage<string, BehaviorSubject<UserModel>> _subjects;
 
-    public UserRepository(UserManager<UserModel> userManager, IStorage<string, BehaviorSubject<UserModel>> subjects)
+    public UserRepository(AppDbContext context, IStorage<string, BehaviorSubject<UserModel>> subjects)
     {
-        _userManager = userManager;
+        _context = context;
         _subjects = subjects;
     }
 
@@ -29,7 +29,7 @@ public class UserRepository : IUserRepository
                 return subject;
             }
 
-            var user = await _userManager.Users
+            var user = await _context.Users
                 .Include(u => u.RequestedCompanies)
                 .SingleAsync(u => u.UserName == username, token);
 
@@ -41,7 +41,8 @@ public class UserRepository : IUserRepository
 
     public async Task UpdateUserPreferences(UserModel model)
     {
-        await _userManager.UpdateAsync(model);
+        _context.Entry(model).State = EntityState.Modified;
+        await _context.SaveChangesAsync();
         if (_subjects.TryGetValue(model.UserName, out var subject))
         {
             subject.OnNext(model);

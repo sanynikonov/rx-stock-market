@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using System.Text.Json;
+using Api.Extensions;
 using AutoMapper;
 using Business.Users;
 using Grpc.Core;
@@ -37,7 +38,7 @@ public class UserService : Api.UserService.UserServiceBase
     {
         try
         {
-            var username = context.GetHttpContext().User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            var username = context.GetAuthorizedUserName();
             await _service.UpdateUserPreferences(_mapper.Map<UserPreferences>(request), username);
             return new UpdatePreferencesResponse();
         }
