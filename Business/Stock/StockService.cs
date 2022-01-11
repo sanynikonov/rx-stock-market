@@ -30,14 +30,28 @@ public class StockService : IStockService
                 if (data.Chart.Error != null)
                 {
                     observer.OnError(new Exception(data.Chart.Error.Description));
-                    observer.OnCompleted();
                     return Disposable.Empty;
                 }
 
                 var result = data.Chart.Result.First();
                 var quote = result.Indicators.Quote.First();
 
-                for (int i = 0; i < result.Timestamp.Length; i++)
+                if (result.Timestamp != null)
+                {
+                    observer.OnNext(new StockTimeSeries
+                    {
+                        Company = result.Meta.Symbol,
+                        Currency = result.Meta.Currency,
+                        Timestamp = result.Timestamp.Last(),
+                        Open = quote.Open.Last(),
+                        Close = quote.Close.Last(),
+                        Low = quote.Low.Last(),
+                        High = quote.High.Last(),
+                        Volume = quote.Volume.Last()
+                    });
+                }
+
+                /*for (int i = 0; i < result.Timestamp.Length; i++)
                 {
                     observer.OnNext(new StockTimeSeries
                     {
@@ -50,7 +64,7 @@ public class StockService : IStockService
                         High = quote.High[i],
                         Volume = quote.Volume[i]
                     });
-                }
+                }*/
 
                 observer.OnCompleted();
                 return Disposable.Empty;

@@ -1,9 +1,7 @@
-﻿using System.Collections.Concurrent;
-using System.Reactive;
+﻿using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Infrastructure.Storage;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Users;
@@ -21,21 +19,28 @@ public class UserRepository : IUserRepository
 
     public IObservable<UserModel> GetUserPreferences(string username)
     {
-        //TODO: use PublishLast
-        return Observable.DeferAsync(async token =>
+        return Observable.Create<UserModel>(async (observer, token) =>
         {
-            if (_subjects.TryGetValue(username, out var subject))
+            if (!_subjects.TryGetValue(username, out var subject))
             {
-                return subject;
+                try
+                {
+                    var user = await _context.Users
+                        .Include(u => u.RequestedCompanies)
+                        .SingleAsync(u => u.UserName == username, token);
+
+                    subject = new BehaviorSubject<UserModel>(user);
+                    _subjects.Add(username, new BehaviorSubject<UserModel>(user));
+                }
+                catch (Exception e)
+                {
+                    observer.OnError(e);
+                }
             }
 
-            var user = await _context.Users
-                .Include(u => u.RequestedCompanies)
-                .SingleAsync(u => u.UserName == username, token);
-
-            subject = new BehaviorSubject<UserModel>(user);
-            _subjects.Add(username, new BehaviorSubject<UserModel>(user));
-            return subject.AsObservable();
+            observer.OnNext(subject.Value);
+            observer.OnCompleted();
+            return Disposable.Empty;
         });
     }
 
